@@ -1,5 +1,7 @@
 from .api import Api
 from datetime import datetime
+from .fieldType import FieldType
+from .operator import Conjunction, And, make_filter, wrap_and_filter
 
 class BitableException(Exception):
     pass
@@ -19,28 +21,23 @@ def to_date(date_text):
     d = datetime.strptime(date_text, "%Y-%m-%d")
     return int(d.timestamp() * 1000)
 
+
 class Table:
     def __init__(self, base_app_token='', token='', table_name='', is_lark=False) -> None:
         self.api = Api(base_app_token, token, is_lark)
         self.table_id = self.api.table_map[table_name]
-        # meta = self.api.get_table_meta(self.table_id)
+        table_meta = self.api.get_table_meta(self.table_id)
+        self.fields = {field['field_name']: field for field in table_meta}
         
 
-    def select(self, where=None, fields=None, order=None, logic='and'):
+    def select(self, where=None, fields=None, order=None, logic='and') -> list[dict]:
         if where is None:
             raise BitableException('where condition is required')
         
-        conditions = []
-        for field_name, cond in where.items():
-            if not isinstance(cond, list): 
-                conditions.append({ "field_name": field_name, "operator": "is", "value": [cond] })
-            else: 
-                operator, cond_value = cond
-                if operator in OPERATOR_MAP:
-                    operator = OPERATOR_MAP[operator]
-                if not isinstance(cond_value, list):
-                    cond_value = [cond_value]
-                conditions.append({ "field_name": field_name, "operator": operator, "value": cond_value })
+        filter = make_filter(where, self.fields)
+        if not isinstance(filter, Conjunction): 
+            filter = wrap_and_filter(filter)
+        
         sort = []
         for order_item in order:
             if not isinstance(order_item, list):
@@ -48,21 +45,27 @@ class Table:
             else: 
                 sort.append({ "field_name": order_item[0], "desc": order_item[1] == 'desc' })
         full_result = []
-        result = self.api.select_records(self.table_id, conditions, fields, sort, logic)
+        result = self.api.select_records(self.table_id, filter, fields, sort, logic)
         
 
 
-    def insert(self, values=None):
+    def insert(self, values:None|dict|list[dict]=None):
         if values is None:
             raise BitableException('values are required for insert')
         if not isinstance(values, list):
             values = [values]
+        def filter_date_field(insert_value):
+            return {k: to_date(v) if self.fields[k]['type'] == FieldType.DateTime.value else v for k, v in insert_value.items()}
+        values = [filter_date_field(v) for v in values]
         records = [{'fields': v} for v in values]
         self.api.insert_records(self.table_id, records)
         
 
-    def update(self, values=None, key=None, id=None):
+    def update(self, values=None, key=None, id=None) -> None:
         pass
 
-    def delete(self, id=None, where=None):
+    def delete(self, record=None, where=None) -> None:
+        pass
+
+    def save(self, record=None) -> None:
         pass

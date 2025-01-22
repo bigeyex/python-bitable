@@ -24,8 +24,8 @@ class Api:
         self.request(f'/tables/{table_id}/records/batch_create', method='POST', 
                      params={}, body={ "records": records })
         
-    def select_records(self, table_id, conditions, fields=None, sort=None, logic='and', page_token=None):
-        request_body = { "filter": { "conditions": conditions, "conjunction": logic }, "automatic_fields": True }
+    def select_records(self, table_id, filter, fields=None, sort=None, page_token=None):
+        request_body = { "filter": filter, "automatic_fields": True }
         if sort is not None:
             request_body['sort'] = sort
         if fields is not None:
