@@ -36,12 +36,12 @@ class TestTable(unittest.TestCase):
         self.table.update({'FieldMultiple': ['B', 'A'], 'FieldDate':'2024-12-21'}, where={'FieldText': 'HelloTestUpdate'})
         result = self.table.select({'FieldText': 'HelloTestUpdate'})[0]
         self.assertEqual(len(result['FieldMultiple']), 2)
-        self.assertEqual(len(result['FieldDate']), '2024-12-21')
+        self.assertEqual(result['FieldDate'], '2024-12-21')
 
         # update by save
         result['FieldMultiple'] = ['B']
         result['FieldDate'] = '2024-12-22'
-        self.table.save(result)
+        self.table.update(result)
         result = self.table.select({'FieldText': 'HelloTestUpdate'})[0]
         self.assertEqual(len(result['FieldMultiple']), 1)
 

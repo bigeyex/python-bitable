@@ -50,7 +50,7 @@ class Conjunction:
         else: 
             return {
                 "conjunction": self.conjunction,
-                "conditions": [child.make_filter_object(fields) for child in self.children]
+                "conditions": [make_filter(child, fields) for child in self.children]
             }
 
 

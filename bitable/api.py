@@ -3,6 +3,8 @@ import requests
 class BaseApiException(Exception):
     pass
 
+
+
 class Api:
     def __init__(self, base_app_token='', token='', is_lark=False) -> None:
         self.base_app_token = base_app_token
@@ -24,16 +26,42 @@ class Api:
         self.request(f'/tables/{table_id}/records/batch_create', method='POST', 
                      params={}, body={ "records": records })
         
-    def select_records(self, table_id, filter, fields=None, sort=None, page_token=None):
+    def batch_update_records(self, table_id, records):
+        """
+            record format: {"fields": {...}, "record_id": "..."}
+            doc: https://open.larkoffice.com/document/server-docs/docs/bitable-v1/app-table-record/batch_update
+        """
+        self.request(f'/tables/{table_id}/records/batch_update', method='POST',
+                     params={}, body={ "records": records })
+        
+    def batch_delete_records(self, table_id, record_ids):
+        self.request(f'/tables/{table_id}/records/batch_delete', method='POST',
+                     params={}, body={ "records": record_ids })
+        
+    def select_records(self, table_id, filter, fields=None, sort=None, with_automatic_fields=False):
         request_body = { "filter": filter, "automatic_fields": True }
         if sort is not None:
             request_body['sort'] = sort
         if fields is not None:
             request_body['field_names'] = fields
+        if with_automatic_fields:
+            request_body['automatic_fields'] = True
         result = []
-        data = self.request(f'/tables/{table_id}/records/search', method='POST', 
-                     params={}, body=request_body)
         
+        has_more = True
+        page_token = None
+        while has_more:
+            params = {'page_size': 500}
+            if page_token is not None:
+                params['page_token'] = page_token
+            records = self.request(f'/tables/{table_id}/records/search', method='POST', 
+                     params=params, body=request_body)
+            result.extend(records['items'])
+            if 'page_token' in records:
+                page_token = records['page_token']
+            else:
+                has_more = False
+        return result
             
         
 
@@ -46,5 +74,5 @@ class Api:
         r = requests.request(method, url, headers=headers, params=params, json=body)
         result = r.json()
         if result['code'] != 0:
-            raise BaseApiException(result['msg'])
+            raise BaseApiException(f"{result['code']}: {result['msg']}")
         return result['data']
