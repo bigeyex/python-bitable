@@ -58,6 +58,10 @@ class TestTable(unittest.TestCase):
         # select with conjunction
         records = self.table.select(Or(Greater('FieldValue', 90), And({'FieldSingle': 'A'}, Contain('FieldText', 'TestSelect2'))))
         self.assertEqual(len(records), 2)
+
+        # select with limit
+        records = self.table.select(limit=5)
+        self.assertEqual(len(records), 5)
         
 
 

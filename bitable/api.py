@@ -38,7 +38,7 @@ class Api:
         self.request(f'/tables/{table_id}/records/batch_delete', method='POST',
                      params={}, body={ "records": record_ids })
         
-    def select_records(self, table_id, filter, fields=None, sort=None, with_automatic_fields=False):
+    def select_records(self, table_id, filter, fields=None, sort=None, limit=None, with_automatic_fields=False):
         request_body = { "filter": filter, "automatic_fields": True }
         if sort is not None:
             request_body['sort'] = sort
@@ -50,8 +50,10 @@ class Api:
         
         has_more = True
         page_token = None
+        page_size = limit if limit is not None and limit <= 500 else 500
+
         while has_more:
-            params = {'page_size': 500}
+            params = {'page_size': page_size}
             if page_token is not None:
                 params['page_token'] = page_token
             records = self.request(f'/tables/{table_id}/records/search', method='POST', 
@@ -59,6 +61,11 @@ class Api:
             result.extend(records['items'])
             if 'page_token' in records:
                 page_token = records['page_token']
+                if limit is not None:
+                    limit -= page_size
+                    if limit <= 0:
+                        break
+                    page_size = limit if limit <= 500 else 500
             else:
                 has_more = False
         return result

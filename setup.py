@@ -5,7 +5,7 @@ with open("./README.md", "r", encoding='utf-8') as fh:
 
 setuptools.setup(
     name="bitable",
-    version="1.0.0",
+    version="1.0.1",
     author="Yu Wang (bigeyex)",
     author_email="bigeyex@gmail.com",
     description="A Python package to operate with Feishu/Lark bitable",
@@ -19,7 +19,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
-
+        "requests==2.32.3",
     ],
     include_package_data = True,
     python_requires='>=3.6',

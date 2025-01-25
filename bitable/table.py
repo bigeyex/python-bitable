@@ -20,13 +20,13 @@ class Table:
         self.fields = {field['field_name']: field for field in table_meta}
         
 
-    def select(self, where=None, fields=None, order=None, with_automatic_fields=False) -> list[dict]:
-        if where is None:
-            raise BitableException('where condition is required')
+    def select(self, where=None, fields=None, order=None, limit=None, with_automatic_fields=False) -> list[dict]:
         
-        filter = make_filter(where, self.fields)
-        if not 'conjunction' in filter: 
-            filter = wrap_and_filter(filter)
+        filter = None
+        if where is not None:
+            filter = make_filter(where, self.fields)
+            if not 'conjunction' in filter: 
+                filter = wrap_and_filter(filter)
         
         sort = []
         if order is not None:
@@ -36,7 +36,7 @@ class Table:
                 else:
                     sort.append({'field_name': field})
         result = []
-        api_result = self.api.select_records(self.table_id, filter, fields, sort, with_automatic_fields)
+        api_result = self.api.select_records(self.table_id, filter, fields, sort, limit, with_automatic_fields)
         for record in api_result:
             item = record['fields']
             for field in item:
