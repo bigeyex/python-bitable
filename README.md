@@ -13,7 +13,8 @@ pip install bitable
 ```python
 from bitable import Table
 
-table = Table(BASE_ID, BASE_TOKEN, 'TABLE_NAME')
+table = Table(BASE_ID, AUTH_TOKEN, 'TABLE_NAME')
+# you may also use table_id: Table(BASE_ID, AUTH_TOKEN, table_id=TABLE_ID)
 
 # select records
 records = table.select() # select all records
@@ -49,7 +50,7 @@ table = Table(BASE_ID, BASE_TOKEN, 'TABLE_NAME')
 BASE_ID can be found at the bitable's URL after 'base/'  
 ![BASE_ID on URL](./doc_assets/base_id_on_url.png)
 
-BASE_TOKEN can be found following these steps:
+AUTH_TOKEN can be found following these steps:
 
 1. click the "Base extensions" icon on the top right:
 2. click "Customize" on the bottom right

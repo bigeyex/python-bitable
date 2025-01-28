@@ -13,14 +13,17 @@ def to_date(date_text):
 
 
 class Table:
-    def __init__(self, base_app_token='', token='', table_name='', is_lark=False) -> None:
-        self.api = Api(base_app_token, token, is_lark)
-        self.table_id = self.api.table_map[table_name]
+    def __init__(self, base_app_token='', auth_code='', table_name='', table_id=None, is_lark=False):
+        self.api = Api(base_app_token, auth_code, is_lark)
+        if table_id is not None:
+            self.table_id = table_id
+        else:
+            self.table_id = self.api.table_map[table_name]
         table_meta = self.api.get_table_meta(self.table_id)
         self.fields = {field['field_name']: field for field in table_meta}
         
 
-    def select(self, where=None, fields=None, order=None, limit=None, with_automatic_fields=False) -> list[dict]:
+    def select(self, where=None, fields=None, order=None, limit=None, with_automatic_fields=False):
         
         filter = None
         if where is not None:
@@ -51,7 +54,7 @@ class Table:
     def _filter_date_field(self, record):
         return {k: to_date(v) if k in self.fields and self.fields[k]['type'] == FieldType.DateTime.value else v for k, v in record.items()}
 
-    def insert(self, values:None|dict|list[dict]=None):
+    def insert(self, values=None):
         if values is None:
             raise BitableException('values are required for insert')
         if not isinstance(values, list):
@@ -83,7 +86,7 @@ class Table:
             raise BitableException('provide where condition or a field record with "_id"')
         
 
-    def delete(self, record=None, where=None) -> None:
+    def delete(self, record=None, where=None):
         """
             usage:
                 delete by where condition:
