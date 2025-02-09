@@ -62,6 +62,10 @@ class TestTable(unittest.TestCase):
         # select with limit
         records = self.table.select(limit=5)
         self.assertEqual(len(records), 5)
+
+    def test_text_with_links(self):
+        records = self.table.select({'FieldText': 'baidu.com has links'})[0]
+        self.assertEqual(records['FieldText'], 'baidu.com has links')
         
 
 

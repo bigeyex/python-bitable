@@ -44,7 +44,8 @@ class Table:
             item = record['fields']
             for field in item:
                 if self.fields[field]['type'] == FieldType.Text.value:
-                    item[field] = item[field][0]['text']
+                    text_contents = [text['text'] for text in item[field]]
+                    item[field] = ''.join(text_contents)
                 elif self.fields[field]['type'] == FieldType.DateTime.value:
                     item[field] = datetime.fromtimestamp(item[field]/1000).strftime("%Y-%m-%d")
             item['_id'] = record['record_id']
